@@ -75,7 +75,7 @@ class Weixin {
       return null;
     }
     $content = json_decode($content, true);
-    if (!isset($content['access_token'])) {
+    if (empty($content) || !isset($content['access_token'])) {
       return null;
     }
     $this->setSessionAccessToken($content['access_token']);
@@ -133,7 +133,7 @@ class Weixin {
       return null;
     }
     $content = json_decode($content, true);
-    if (!isset($content['access_token'])) {
+    if (empty($content) || !isset($content['access_token'])) {
       return null;
     }
     $this->accessTokenExpire = $content['expires_in'];
@@ -154,7 +154,7 @@ class Weixin {
       return null;
     }
     $content = json_decode($content, true);
-    if ($content['errcode'] != 0) {
+    if (empty($content) || $content['errcode'] != 0) {
       return null;
     }
     $this->jsTicketExire = $content['expires_in'];
