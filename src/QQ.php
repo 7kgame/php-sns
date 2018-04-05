@@ -10,6 +10,8 @@ class QQ {
   const OPENID_API = 'https://graph.qq.com/oauth2.0/me';
   const USERINFO_API = 'https://graph.qq.com/user/get_user_info';
 
+  public static $scopes = array('get_user_info');
+
   public $appId;
   public $appSecret;
 
@@ -33,8 +35,11 @@ class QQ {
     if (empty($state)) {
       $state = time();
     }
+    if ($scope && !in_array($scope, self::$scopes)) {
+      $scope = null;
+    }
     if (empty($scope)) {
-      $scope = 'get_user_info';
+      $scope = self::$scopes[0];
     }
     $display = $useInMobile ? 'mobile' : '';
     

@@ -84,7 +84,10 @@ class Weixin {
     return $this->sessionAccessToken;
   }
 
-  public function getUserInfoByAuth () {
+  public function getUserInfo ($code) {
+    if (!empty($code)) {
+      $this->getSessionAccessTokenByAuth($code);
+    }
     $querys = array( 
       'access_token' => $this->sessionAccessToken,
       'openid'       => $this->openId,
