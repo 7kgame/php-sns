@@ -94,13 +94,24 @@ class Weixin {
     if (empty($content)) {
       return null;
     }
-    $user = json_decode($content, true);
-    if (empty ($user) || !isset($user['unionid'])) {
+    $wxUser = json_decode($content, true);
+    if (empty ($wxUser) || !isset($wxUser['unionid'])) {
       return null;
     }
-    $this->unionId = $user['unionid'];
-    $this->user = $user;
-    return $user;
+    $this->unionId = $wxUser['unionid'];
+    $this->user = array(
+      'openId' => $this->openId,
+      'unionId' => $this->unionId,
+      'name'   => $wxUser['nickname'],
+      'sex'    => $wxUser['sex'] == 2 ? 2 : 1,
+      'avatar' => $wxUser['headimgurl'],
+      'mobile' => isset($wxUser['mobile']) ? $wxUser['mobile'] : '',
+      'city'   => isset($wxUser['city']) ? $wxUser['city'] : '',
+      'province'   => isset($wxUser['province']) ? $wxUser['province'] : '',
+      'country'   => isset($wxUser['country']) ? $wxUser['country'] : '',
+      'birthday'   => isset($wxUser['year']) ? $wxUser['year'] : '',
+    );
+    return $this->user;
   }
 
   public function setSessionAccessToken ($accessToken) {

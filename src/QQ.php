@@ -29,7 +29,7 @@ class QQ {
     }
   }
 
-  public function toAuth ($redirect, $useInMobile=true, $state=null, $scope=null) {
+  public function toAuth ($redirect, $scope=null, $useInMobile=true, $state=null) {
     if (empty($state)) {
       $state = time();
     }
@@ -60,7 +60,7 @@ class QQ {
     if (empty($content)) {
       return null;
     }
-    $content = json_decode($content, true);
+    parse_str($content, $content);
     if (empty($content) || !isset($content['access_token'])) {
       return null;
     }
@@ -73,8 +73,8 @@ class QQ {
     if (empty($content)) {
       return null;
     }
-    $content = preg_replace("callback(", "", $content);
-    $content = trim(preg_replace(");", "", $content));
+    $content = preg_replace("/callback\(/", "", $content);
+    $content = trim(preg_replace("/\);/", "", $content));
     $content = json_decode($content, true);
     if (empty($content) || !isset($content['openid'])) {
       return null;
@@ -84,7 +84,10 @@ class QQ {
     return $accessToken;
   }
 
-  public function getUserInfo () {
+  public function getUserInfo ($code=null, $redirect=null) {
+    if (!empty($code)) {
+      $this->getAccessToken($code, $redirect);
+    }
     $querys = array(
       'access_token' => $this->accessToken,
       'oauth_consumer_key' => $this->appId,
@@ -99,7 +102,17 @@ class QQ {
       return null;
     }
     $this->user = array(
-      'name' => $content['nickname']
+      'openId' => $this->openId,
+      'unionId' => '',
+      'name' => $content['nickname'],
+      'sex'  => $content['gender'] == '女' ? 2 : 1,
+      'avatar' => empty($content['figureurl_qq_2']) ? $content['figureurl_qq_1'] : $content['figureurl_qq_2'],
+      'mobile' => isset($content['mobile']) ? $content['mobile'] : '',
+      'city' => isset($content['city']) ? $content['city'] : '',
+      'province' => isset($content['province']) ? $content['province'] : '',
+      'country' => isset($content['country']) ? $content['country'] : '',
+      'birthday' => isset($content['year']) ? $content['year'] : '',
+      'avatar2' => empty($content['figureurl_2']) ? $content['figureurl_1'] : $content['figureurl_2']
     );
     return $this->user;
   }
