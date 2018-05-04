@@ -19,7 +19,7 @@ class QQ {
   public $unionid;
   public $user;
 
-  private $accessToken;
+  public $accessToken;
 
   public function __construct ($appId, $appSecret, array $config=null) {
     $this->appId = $appId;
@@ -29,6 +29,14 @@ class QQ {
         $this->$k = $v;
       }
     }
+  }
+
+  public function setAccessToken($accessToken){
+    $this->accessToken = $accessToken;
+  }
+
+  public function setOpenId($openId){
+    $this->openId = $openId;
   }
 
   public function toAuth ($redirect, $scope=null, $useInMobile=true, $state=null) {
