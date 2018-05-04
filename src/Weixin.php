@@ -84,7 +84,7 @@ class Weixin {
     return $this->sessionAccessToken;
   }
 
-  public function getUserInfo ($code) {
+  public function getUserInfo ($code=null) {
     if (!empty($code)) {
       $this->getSessionAccessTokenByAuth($code);
     }
@@ -112,7 +112,7 @@ class Weixin {
       'city'   => isset($wxUser['city']) ? $wxUser['city'] : '',
       'province'   => isset($wxUser['province']) ? $wxUser['province'] : '',
       'country'   => isset($wxUser['country']) ? $wxUser['country'] : '',
-      'birthday'   => isset($wxUser['year']) ? $wxUser['year'] : '',
+      'birthday'   => isset($wxUser['year']) ? $wxUser['year'] : ''
     );
     return $this->user;
   }
