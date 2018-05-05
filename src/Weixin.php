@@ -121,12 +121,24 @@ class Weixin {
     $this->sessionAccessToken = $accessToken;
   }
 
+  public function getSessionAccessTokenExpire () {
+    return $this->sessionAccessTokenExpire;
+  }
+
   public function setAccessToken ($accessToken) {
     $this->accessToken = $accessToken;
   }
 
+  public function getAccessTokenExpire () {
+    return $this->accessTokenExpire;
+  }
+
   public function setJSTicket ($jsTicket) {
     $this->jsTicket = $jsTicket;
+  }
+
+  public function getJsTicketExire () {
+    return $this->jsTicketExire;
   }
 
   public function getSessionAccessToken () {
@@ -199,6 +211,9 @@ class Weixin {
 
   public function jsConfig ($url, array $jsApiList=null) {
     $jsTicket = $this->getJSTicket();
+    if (empty($jsTicket)) {
+      return null;
+    }
     $nonceStr = $this->createNonceStr();
     $timestamp = time();
     $signature = array(
