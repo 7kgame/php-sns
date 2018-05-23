@@ -6,5 +6,7 @@ class Target {
 
   const WX = 'wx';
   const QQ = 'qq';
+  const OPPO = 'oppo';
+  const FACEBOOK = 'fb';
 
 }
