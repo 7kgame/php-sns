@@ -3,6 +3,7 @@
 namespace QKPHP\SNS;
 
 use \QKPHP\Common\Utils\Http;
+use \QKPHP\SNS\Consts\Platform;
 
 class Weixin {
 
@@ -23,6 +24,7 @@ class Weixin {
 
   private $authApi = 'https://open.weixin.qq.com/connect/oauth2/authorize';
   private $authAccessTokenApi = 'https://api.weixin.qq.com/sns/oauth2/access_token';
+  private $authAccessTokenApi4XCX = 'https://api.weixin.qq.com/sns/jscode2session';
   private $userInfoApi = 'https://api.weixin.qq.com/sns/userinfo';
   private $jsTicketApi = 'https://api.weixin.qq.com/cgi-bin/ticket/getticket';
 
@@ -64,22 +66,36 @@ class Weixin {
   }
 
   public function getSessionAccessTokenByAuth ($code) {
+    $url = $this->authAccessTokenApi;
     $querys = array(
       'appid'  => $this->appId,
       'secret' => $this->appSecret,
-      'code'   => $code,
       'grant_type' => 'authorization_code'
     );
-    list($status, $content) = Http::get($this->authAccessTokenApi, $querys);
+    if ($this->platform && $this->platform == Platform::WX_XCX) {
+      $querys['js_code'] = $code;
+      $url = $this->authAccessTokenApi4XCX;
+    } else {
+      $querys['code'] = $code;
+    }
+    list($status, $content) = Http::get($url, $querys);
     if (empty($content)) {
       return null;
     }
     $content = json_decode($content, true);
-    if (empty($content) || !isset($content['access_token'])) {
+    if (empty($content)) {
       return null;
     }
-    $this->setSessionAccessToken($content['access_token']);
-    $this->sessionAccessTokenExpire = $content['expires_in'];
+    $accessToken = null;
+    $expire = time() + 2*86400;
+    if ($this->platform && $this->platform == Platform::WX_XCX) {
+      $accessToken = $content['session_key'];
+    } else {
+      $accessToken = $content['access_token'];
+      $expire = $content['expires_in'];
+    }
+    $this->setSessionAccessToken($accessToken);
+    $this->sessionAccessTokenExpire = $expire;
     $this->openId = $content['openid'];
     return $this->sessionAccessToken;
   }
@@ -88,23 +104,31 @@ class Weixin {
     if (!empty($code)) {
       $this->getSessionAccessTokenByAuth($code);
     }
-    $querys = array( 
-      'access_token' => $this->sessionAccessToken,
-      'openid'       => $this->openId,
-      'lang'         => 'zh_CN'
-    );
-    list($status, $content) = Http::get($this->userInfoApi, $querys);
-    if (empty($content)) {
-      return null;
+    if ($this->scope && $this->scope == 'user') {
+      $querys = array( 
+        'access_token' => $this->sessionAccessToken,
+        'openid'       => $this->openId,
+        'lang'         => 'zh_CN'
+      );
+      list($status, $content) = Http::get($this->userInfoApi, $querys);
+      if (empty($content)) {
+        return null;
+      }
+      $wxUser = json_decode($content, true);
+      if (empty ($wxUser) || !isset($wxUser['unionid'])) {
+        return null;
+      }
+      $this->unionId = $wxUser['unionid'];
+    } else {
+      $wxUser = array(
+        'nickname' => '',
+        'sex'      => 1,
+        'headimgurl' => 'https://snsgame.uimg.cn/minigame/res/img/avatar.jpeg'
+      );
     }
-    $wxUser = json_decode($content, true);
-    if (empty ($wxUser) || !isset($wxUser['unionid'])) {
-      return null;
-    }
-    $this->unionId = $wxUser['unionid'];
     $this->user = array(
       'openId' => $this->openId,
-      'unionId' => $this->unionId,
+      'unionId' => $this->unionId || '',
       'name'   => $wxUser['nickname'],
       'sex'    => $wxUser['sex'] == 2 ? 2 : 1,
       'avatar' => $wxUser['headimgurl'],
