@@ -100,7 +100,20 @@ class Weixin {
     return $this->sessionAccessToken;
   }
 
-  public function getUserInfo ($code=null) {
+  private function decrypt () {
+  }
+
+  public function decryptUser ($encryptedData, $iv) {
+    if (empty($encryptedData) || empty($this->sessionAccessToken) || strlen($iv) != 24) {
+      return null;
+    }
+
+    $aesKey = base64_decode($this->sessionAccessToken);
+    $aesCipher = base64_decode($encryptedData);
+
+  }
+
+  public function getUserInfo ($code=null, $rawData=null) {
     if (!empty($code)) {
       $this->getSessionAccessTokenByAuth($code);
     }
@@ -120,11 +133,26 @@ class Weixin {
       }
       $this->unionId = $wxUser['unionid'];
     } else {
-      $wxUser = array(
-        'nickname' => '',
-        'sex'      => 1,
-        'headimgurl' => 'https://snsgame.uimg.cn/minigame/res/img/avatar.jpeg'
-      );
+      $wxUser = null;
+      if (!empty($rawData)) {
+        $wxUser = json_decode($rawData, true);
+      }
+      if (empty($wxUser)) {
+        $wxUser = array(
+          'nickname' => '',
+          'sex'      => 1,
+          'headimgurl' => 'https://snsgame.uimg.cn/minigame/res/img/avatar.jpeg'
+        );
+      }
+    }
+    if (!isset($wxUser['sex']) && isset($wxUser['gender'])) {
+      $wxUser['sex'] = $wxUser['gender'];
+    }
+    if (!isset($wxUser['headimgurl']) && isset($wxUser['avatarUrl'])) {
+      $wxUser['headimgurl'] = $wxUser['avatarUrl'];
+    }
+    if (!isset($wxUser['nickname']) && isset($wxUser['nickName'])) {
+      $wxUser['nickname'] = $wxUser['nickName'];
     }
     $this->user = array(
       'openId' => $this->openId,
@@ -134,9 +162,9 @@ class Weixin {
       'avatar' => $wxUser['headimgurl'],
       'mobile' => isset($wxUser['mobile']) ? $wxUser['mobile'] : '',
       'city'   => isset($wxUser['city']) ? $wxUser['city'] : '',
-      'province'   => isset($wxUser['province']) ? $wxUser['province'] : '',
+      'province'  => isset($wxUser['province']) ? $wxUser['province'] : '',
       'country'   => isset($wxUser['country']) ? $wxUser['country'] : '',
-      'birthday'   => isset($wxUser['year']) ? $wxUser['year'] : ''
+      'birthday'  => isset($wxUser['year']) ? $wxUser['year'] : ''
     );
     return $this->user;
   }
