@@ -117,7 +117,7 @@ class Weixin {
     if (!empty($code)) {
       $this->getSessionAccessTokenByAuth($code);
     }
-    if ($this->scope && $this->scope == 'user') {
+    if (empty($rawData) && $this->scope == 'user') {
       $querys = array( 
         'access_token' => $this->sessionAccessToken,
         'openid'       => $this->openId,
