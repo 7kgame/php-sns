@@ -240,7 +240,7 @@ class Weixin {
     return $this->jsTicket;
   }
 
-  public function createNonceStr($length = 16) {
+  public static function createNonceStr($length = 16) {
     $chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     $str = "";
     for ($i = 0; $i < $length; $i++) {
@@ -249,7 +249,7 @@ class Weixin {
     return $str;
   }
 
-  public function getSignature(array $params, $secret) {
+  public static function getSignature(array $params, $secret) {
     ksort($params, SORT_REGULAR);
     $params0 = array();
     foreach($params as $key=>$value) {
@@ -266,7 +266,7 @@ class Weixin {
     if (empty($jsTicket)) {
       return null;
     }
-    $nonceStr = $this->createNonceStr();
+    $nonceStr = self::createNonceStr();
     $timestamp = time();
     $signature = array(
       "appId"     => $this->appId,
