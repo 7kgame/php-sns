@@ -12,9 +12,9 @@
         }
     ],
     "require": {
-      "7k7k/php-common": "dev-master"
+      "7k7k/php-common": "1.*"
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "autoload": {
         "psr-4": {"QKPHP\\SNS\\": "src"}
     },
