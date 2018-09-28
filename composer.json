@@ -12,15 +12,12 @@
         }
     ],
     "require": {
-      "7k7k/php-common": "1.*"
+      "7k7k/php-common": "1.*",
+      "php": ">=5.3.0"
     },
     "minimum-stability": "stable",
     "autoload": {
         "psr-4": {"QKPHP\\SNS\\": "src"}
     },
-    "minimum-stability": "dev",
-    "classmap": ["src/"],
-    "require": {
-      "php": ">=5.3.0"
-    }
+    "classmap": ["src/"]
 }
