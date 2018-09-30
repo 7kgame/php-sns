@@ -100,17 +100,17 @@ class Weixin {
     return $this->sessionAccessToken;
   }
 
-  private function decrypt () {
-  }
-
-  public function decryptUser ($encryptedData, $iv) {
+  public function decrypt ($encryptedData, $iv) {
     if (empty($encryptedData) || empty($this->sessionAccessToken) || strlen($iv) != 24) {
       return null;
     }
 
     $aesKey = base64_decode($this->sessionAccessToken);
+    $aesIV = base64_decode($iv);
     $aesCipher = base64_decode($encryptedData);
 
+    $result = openssl_decrypt( $aesCipher, "AES-128-CBC", $aesKey, 1, $aesIV);
+    return $result;
   }
 
   public function getUserInfo ($code=null, $rawData=null) {
