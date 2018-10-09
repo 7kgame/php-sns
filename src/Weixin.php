@@ -335,4 +335,16 @@ class Weixin {
     ));
   }
 
+  public function makePayParamsForXCX ($prepayId) {
+    $ret = array(
+      'appId' => $this->appId,
+      'timeStamp' => strval(time()),
+      'nonceStr' => Weixin::createNonceStr(),
+      'package'  => 'prepay_id='.$prepayId,
+      'signType' => 'MD5'
+    );
+    $ret['paySign'] = Weixin::getSignature($ret, $this->mchSecret);
+    return $ret;
+  }
+
 }
