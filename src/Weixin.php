@@ -285,6 +285,9 @@ class Weixin {
     if (empty($this->appId) || empty($this->mchId) || empty($this->payNotifyUrl) || empty($this->mchSecret)) {
       return array(false, "appId | mchId | payNotifyUrl | mchSecret is empty");
     }
+    if (is_numeric($orderId) && $orderId < 100) {
+      return array(false, "order id must above then 100");
+    }
     $params = array(
       'appid'  => $this->appId,
       'mch_id' => $this->mchId,
@@ -317,7 +320,13 @@ class Weixin {
       return array(false, '微信下单失败');
     }
     if ($content['return_code'] != 'SUCCESS' || $content['result_code'] != 'SUCCESS') {
-      return array(false, 'code: '.$content['err_code'].', '.$content['err_code_des']);
+      $code = $content['return_code'];
+      $msg = $content['return_msg'];
+      if ($content['return_code'] == 'SUCCESS') {
+        $code = $content['err_code'];
+        $msg = $content['err_code_des'];
+      }
+      return array(false, "code: $code, $msg");
     }
     return array(true, array(
       'tradeType' => $content['trade_type'],
