@@ -339,11 +339,11 @@ class Weixin {
     $ret = array(
       'appId' => $this->appId,
       'timeStamp' => strval(time()),
-      'nonceStr' => Weixin::createNonceStr(),
+      'nonceStr' => self::createNonceStr(),
       'package'  => 'prepay_id='.$prepayId,
       'signType' => 'MD5'
     );
-    $ret['paySign'] = Weixin::getSignature($ret, $this->mchSecret);
+    $ret['paySign'] = self::getSignature($ret, $this->mchSecret);
     return $ret;
   }
 
