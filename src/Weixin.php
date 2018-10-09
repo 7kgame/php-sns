@@ -293,7 +293,7 @@ class Weixin {
       'notify_url' => $this->payNotifyUrl,
       'trade_type' => $tradeType,
       'openid'     => $this->openId,
-      'nonce_str'  => $this->createNonceStr(),
+      'nonce_str'  => self::createNonceStr(),
       'out_trade_no'     => $orderId,
       'spbill_create_ip' => $ip,
     );
@@ -306,7 +306,7 @@ class Weixin {
     $params['attach']['channel'] = $channel;
     $params['attach'] = json_encode($params['attach']);
 
-    $params['sign'] = $this->getSignature($params, $this->mchSecret);
+    $params['sign'] = self::getSignature($params, $this->mchSecret);
     $params = Utils::toXML($params);
     list($status, $content) = Http::post($this->unifiedApi, $params);
     if (empty($content)) {
