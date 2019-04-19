@@ -1,14 +1,14 @@
 {
-    "name": "7k7k/php-sns",
+    "name": "7kgame/php-sns",
     "description": "微信/qq等开放平台 相关SDK封装",
-    "keywords": ["7k7k", "php", "微信", "QQ", "微博"],
+    "keywords": ["7kgame", "php", "微信", "QQ", "微博"],
     "homepage": "http://github.com/7kgame/php-sns",
     "type": "library",
     "license": "MIT",
     "authors": [
         {
             "name": "chenyijun",
-            "email": "chenyijun@7k7k.com"
+            "email": "cyij2006@gmail.com"
         }
     ],
     "require": {
