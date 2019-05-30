@@ -3,6 +3,7 @@
 namespace QKPHP\SNS;
 
 use \QKPHP\Common\Utils\Http;
+use \QKPHP\Common\Utils\Utils;
 use \QKPHP\SNS\Consts\Platform;
 
 class Weixin {
@@ -17,6 +18,7 @@ class Weixin {
   public $appId;
   public $appSecret;
   public $mchId;
+  public $mchSecret;
 
   public $openId;
   public $unionId;
@@ -31,6 +33,7 @@ class Weixin {
   private $accessTokenApi = 'https://api.weixin.qq.com/cgi-bin/token';
 
   private $unifiedApi = 'https://api.mch.weixin.qq.com/pay/unifiedorder';
+  private $payNotifyUrl = '';
 
   private static $DEFAULT_JSAPILIST = array(
     'scanQRCode', 'chooseWXPay', 'closeWindow',
@@ -100,17 +103,17 @@ class Weixin {
     return $this->sessionAccessToken;
   }
 
-  private function decrypt () {
-  }
-
-  public function decryptUser ($encryptedData, $iv) {
+  public function decrypt ($encryptedData, $iv) {
     if (empty($encryptedData) || empty($this->sessionAccessToken) || strlen($iv) != 24) {
       return null;
     }
 
     $aesKey = base64_decode($this->sessionAccessToken);
+    $aesIV = base64_decode($iv);
     $aesCipher = base64_decode($encryptedData);
 
+    $result = openssl_decrypt( $aesCipher, "AES-128-CBC", $aesKey, 1, $aesIV);
+    return $result;
   }
 
   public function getUserInfo ($code=null, $rawData=null) {
@@ -276,6 +279,72 @@ class Weixin {
       "jsApiList" => self::$DEFAULT_JSAPILIST
     );
     return 'wx.config('.json_encode($signature).')';
+  }
+
+  public function createOrder ($orderId, $amount, $desc, $ip, $channel="xcx", array $options=null, $tradeType='JSAPI') {
+    if (empty($this->appId) || empty($this->mchId) || empty($this->payNotifyUrl) || empty($this->mchSecret)) {
+      return array(false, "appId | mchId | payNotifyUrl | mchSecret is empty");
+    }
+    if (is_numeric($orderId) && $orderId < 100) {
+      return array(false, "order id must above then 100");
+    }
+    $params = array(
+      'appid'  => $this->appId,
+      'mch_id' => $this->mchId,
+      'body'   => $desc,
+      'total_fee'  => $amount,
+      'notify_url' => $this->payNotifyUrl,
+      'trade_type' => $tradeType,
+      'openid'     => $this->openId,
+      'nonce_str'  => self::createNonceStr(),
+      'out_trade_no'     => $orderId,
+      'spbill_create_ip' => $ip,
+    );
+    if (!empty($options)) {
+      $params = array_merge($options, $params);
+    }
+    if (!isset($params['attach'])) {
+      $params['attach'] = array();
+    }
+    $params['attach']['channel'] = $channel;
+    $params['attach'] = json_encode($params['attach']);
+
+    $params['sign'] = self::getSignature($params, $this->mchSecret);
+    $params = Utils::toXML($params);
+    list($status, $content) = Http::post($this->unifiedApi, $params);
+    if (empty($content)) {
+      return array(false, '微信下单失败');
+    }
+    $content = Utils::xmlToArr($content);
+    if (!isset($content['return_code'])) {
+      return array(false, '微信下单失败');
+    }
+    if ($content['return_code'] != 'SUCCESS' || $content['result_code'] != 'SUCCESS') {
+      $code = $content['return_code'];
+      $msg = $content['return_msg'];
+      if ($content['return_code'] == 'SUCCESS') {
+        $code = $content['err_code'];
+        $msg = $content['err_code_des'];
+      }
+      return array(false, "code: $code, $msg");
+    }
+    return array(true, array(
+      'tradeType' => $content['trade_type'],
+      'prepayId'  => $content['prepay_id'],
+      'codeUrl'   => isset($content['code_url']) ? $content['code_url'] : ''
+    ));
+  }
+
+  public function makePayParamsForXCX ($prepayId) {
+    $ret = array(
+      'appId' => $this->appId,
+      'timeStamp' => strval(time()),
+      'nonceStr' => self::createNonceStr(),
+      'package'  => 'prepay_id='.$prepayId,
+      'signType' => 'MD5'
+    );
+    $ret['paySign'] = self::getSignature($ret, $this->mchSecret);
+    return $ret;
   }
 
 }
