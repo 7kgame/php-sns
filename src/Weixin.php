@@ -156,7 +156,7 @@ class Weixin {
     }
     $this->user = array(
       'openId' => $this->openId,
-      'unionId' => $this->unionId || '',
+      'unionId' => !empty($this->unionId) ? $this->unionId : '',
       'name'   => $wxUser['nickname'],
       'sex'    => $wxUser['sex'] == 2 ? 2 : 1,
       'avatar' => $wxUser['headimgurl'],
